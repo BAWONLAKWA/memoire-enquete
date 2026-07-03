@@ -280,22 +280,6 @@ th{color:var(--text-dim); font-weight:500; font-size:11px; text-transform:upperc
 
 <footer id="footerLink"><button onclick="tryUnlock()">Espace chercheur</button></footer>
 
-<!-- Netlify Forms: must exist statically in the deployed HTML so Netlify's build-time
-     bot can detect it. Hidden from view; submitted via fetch() in finishQuiz(). This is
-     the reliable data-capture path once the file is hosted on Netlify (window.storage
-     may not be available outside a Claude-rendered artifact). -->
-<form name="reponses" data-netlify="true" netlify-honeypot="bot-field" hidden>
-  <input type="text" name="bot-field" />
-  <input type="text" name="date" /><input type="text" name="tier" />
-  <input type="text" name="age" /><input type="text" name="gender" />
-  <input type="text" name="edu" /><input type="text" name="status" />
-  <input type="text" name="investor" /><input type="text" name="ai_use" />
-  <input type="text" name="fl" /><input type="text" name="ob" />
-  <input type="text" name="la" /><input type="text" name="ab" />
-  <input type="text" name="rp" /><input type="text" name="ai" />
-  <textarea name="data"></textarea>
-</form>
-
 <!-- DASHBOARD -->
 <div id="dash">
   <div id="lockscreen">
@@ -661,32 +645,17 @@ async function finishQuiz(){
     ob: dimScore('ob'), la: dimScore('la'), ab: dimScore('ab'), rp: dimScore('rp'), ai: dimScore('ai'),
     raw: answers
   };
-  // Path 1: Claude artifact storage - works when this page is opened as a
-  // Claude-rendered artifact, not guaranteed once hosted standalone on Netlify.
+  // Save via the backend (api/submit.js -> Upstash Redis). This is the
+  // single, reliable capture path once deployed on Vercel.
   try{
-    const key = 'resp_' + Date.now() + '_' + Math.random().toString(36).slice(2,8);
-    await window.storage.set(key, JSON.stringify(record), true);
-  }catch(e){ console.error('Storage error (window.storage)', e); }
-
-  // Path 2: Netlify Forms - the reliable capture path once deployed via
-  // Netlify Drop / GitHub. Silently no-ops (404) if hosted elsewhere.
-  try{
-    const r = await fetch(window.location.pathname, {
+    const r = await fetch('/api/submit', {
       method: 'POST',
-      headers: {'Content-Type': 'application/x-www-form-urlencoded'},
-      body: new URLSearchParams({
-        'form-name': 'reponses',
-        'bot-field': '', // honeypot - must be present and empty or Netlify silently drops the submission
-        date: new Date(record.ts).toISOString(),
-        tier: record.tier,
-        age: record.age, gender: record.gender, edu: record.edu, status: record.status,
-        investor: record.investor, ai_use: record.ai_use, fl: record.fl,
-        ob: record.ob, la: record.la, ab: record.ab, rp: record.rp, ai: record.ai,
-        data: JSON.stringify(record)
-      }).toString()
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify(record)
     });
-    console.log('Netlify Forms submission status:', r.status, r.ok ? 'OK' : 'FAILED - check Site > Forms in Netlify, and confirm the file was deployed as index.html');
-  }catch(e){ console.error('Storage error (Netlify Forms)', e); }
+    const result = await r.json();
+    console.log('Submission status:', r.status, r.ok ? 'OK' : ('FAILED - ' + (result.error || 'check Vercel env vars')));
+  }catch(e){ console.error('Submission error', e); }
 
   swap('s-outro');
   document.getElementById('progFill').style.width='100%';
@@ -711,14 +680,14 @@ async function finishQuiz(){
 }
 
 // Comparison against prior respondents, served by the backend function
-// (netlify/functions/get-stats.js), which reads Netlify Forms submissions
+// (api/get-stats.js on Vercel), which reads from Upstash Redis
 // server-side. Falls back to a simple message if the function isn't
 // deployed yet or there aren't enough responses.
 async function renderComparison(record){
   const box = document.getElementById('compareBlock');
   let others = [];
   try{
-    const res = await fetch('/.netlify/functions/get-stats');
+    const res = await fetch('/api/get-stats');
     if(res.ok) others = await res.json();
   }catch(e){ console.error('get-stats fetch failed', e); }
 
@@ -775,7 +744,7 @@ function checkPin(){
 
 async function fetchAllResponses(){
   try{
-    const res = await fetch(`/.netlify/functions/get-stats?full=true&key=${encodeURIComponent(enteredPin || PIN)}`);
+    const res = await fetch(`/api/get-stats?full=true&key=${encodeURIComponent(enteredPin || PIN)}`);
     if(!res.ok){
       console.error('get-stats (full) responded', res.status);
       return [];
