@@ -1,0 +1,961 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Perception du risque & IA - Enquête ESLSCA</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --ink:#141B2E;
+  --ink-2:#1C2540;
+  --parchment:#FBF7EF;
+  --parchment-dim:#F1EADA;
+  --gold:#E8A33D;
+  --gold-dim:#C98B2E;
+  --teal:#3E8E8A;
+  --coral:#D46A5C;
+  --text-dim:#8891A8;
+  --line: rgba(232,163,61,0.18);
+}
+*{box-sizing:border-box; margin:0; padding:0;}
+html,body{height:100%;}
+body{
+  background:var(--ink);
+  background-image:
+    radial-gradient(circle at 15% 10%, rgba(232,163,61,0.07), transparent 40%),
+    radial-gradient(circle at 85% 90%, rgba(62,142,138,0.08), transparent 45%);
+  color:var(--parchment);
+  font-family:'Inter', sans-serif;
+  min-height:100vh;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  -webkit-font-smoothing:antialiased;
+}
+.stage{width:100%; max-width:640px; padding:24px 20px 60px; flex:1; display:flex; flex-direction:column;}
+::selection{background:var(--gold); color:var(--ink);}
+
+/* ---------- Top bar ---------- */
+.topbar{
+  display:flex; align-items:center; justify-content:space-between;
+  padding:14px 2px 22px;
+}
+.brand{
+  font-family:'Fraunces', serif; font-weight:600; font-size:15px;
+  letter-spacing:0.02em; color:var(--gold);
+}
+.brand span{color:var(--text-dim); font-family:'Inter',sans-serif; font-weight:500; font-size:12px; margin-left:8px;}
+.stamp{
+  font-family:'JetBrains Mono', monospace; font-size:11px; color:var(--ink);
+  background:var(--gold); border-radius:50px; padding:5px 12px;
+  letter-spacing:0.03em; white-space:nowrap;
+}
+
+/* ---------- Progress ---------- */
+.progress-track{height:3px; width:100%; background:rgba(255,255,255,0.08); border-radius:3px; overflow:hidden; margin-bottom:6px;}
+.progress-fill{height:100%; background:linear-gradient(90deg, var(--gold-dim), var(--gold)); width:0%; transition:width .5s cubic-bezier(.65,0,.35,1);}
+
+/* ---------- Screens ---------- */
+.screen{display:none; flex:1; flex-direction:column; animation:rise .45s cubic-bezier(.2,.7,.3,1);}
+.screen.on{display:flex;}
+@keyframes rise{from{opacity:0; transform:translateY(14px);} to{opacity:1; transform:translateY(0);}}
+
+/* ---------- Landing ---------- */
+#s-intro{justify-content:center; text-align:left; gap:0;}
+.eyebrow{
+  font-family:'JetBrains Mono', monospace; font-size:12px; color:var(--teal);
+  letter-spacing:0.08em; text-transform:uppercase; margin-bottom:18px;
+}
+h1.hero{
+  font-family:'Fraunces', serif; font-weight:600; font-size:clamp(32px,7vw,46px);
+  line-height:1.08; color:var(--parchment); margin-bottom:20px;
+}
+h1.hero em{color:var(--gold); font-style:normal;}
+.lede{color:var(--text-dim); font-size:16px; line-height:1.65; max-width:52ch; margin-bottom:30px;}
+.facts-row{display:flex; gap:10px; flex-wrap:wrap; margin-bottom:34px;}
+.fact-chip{
+  border:1px solid var(--line); border-radius:10px; padding:12px 14px; flex:1; min-width:130px;
+  background:rgba(255,255,255,0.02);
+}
+.fact-chip .n{font-family:'Fraunces',serif; font-size:22px; color:var(--gold); font-weight:600;}
+.fact-chip .l{font-size:11.5px; color:var(--text-dim); margin-top:2px;}
+.btn{
+  font-family:'Inter', sans-serif; font-weight:600; font-size:15.5px;
+  border:none; border-radius:12px; padding:16px 26px; cursor:pointer;
+  background:var(--gold); color:var(--ink); transition:transform .15s ease, background .15s ease;
+  display:inline-flex; align-items:center; gap:10px; width:fit-content;
+}
+.btn:hover{background:#F3B457; transform:translateY(-1px);}
+.btn:active{transform:translateY(0);}
+.btn-ghost{
+  background:transparent; border:1px solid var(--line); color:var(--parchment);
+}
+.btn-ghost:hover{background:rgba(255,255,255,0.04);}
+.privacy{font-size:12.5px; color:var(--text-dim); margin-top:16px; line-height:1.5;}
+
+/* ---------- Question card ---------- */
+.qwrap{flex:1; display:flex; flex-direction:column; justify-content:center; padding-top:10px;}
+.qcounter{
+  font-family:'JetBrains Mono', monospace; font-size:12px; color:var(--gold);
+  border:1px solid var(--gold); border-radius:50%; width:46px; height:46px;
+  display:flex; align-items:center; justify-content:center; flex-direction:column; margin-bottom:22px;
+  line-height:1.1;
+}
+.qcounter b{font-size:14px;}
+.qsection{
+  font-family:'JetBrains Mono', monospace; font-size:11px; letter-spacing:0.08em; text-transform:uppercase;
+  color:var(--teal); margin-bottom:10px;
+}
+.qtext{
+  font-family:'Fraunces', serif; font-weight:500; font-size:clamp(21px,4vw,27px); line-height:1.32;
+  color:var(--parchment); margin-bottom:26px; max-width:34ch;
+}
+.options{display:flex; flex-direction:column; gap:10px;}
+.opt{
+  text-align:left; background:var(--parchment); color:var(--ink); border:2px solid transparent;
+  border-radius:12px; padding:15px 18px; font-size:15px; font-weight:500; cursor:pointer;
+  transition:transform .12s ease, border-color .12s ease; font-family:'Inter',sans-serif;
+}
+.opt:hover{transform:translateX(3px); border-color:var(--gold);}
+.opt.sel{border-color:var(--gold); background:#FFF3DF;}
+
+/* likert */
+.likert-row{display:flex; gap:8px; justify-content:space-between; margin-top:6px;}
+.likert-pt{
+  flex:1; aspect-ratio:1/1; border-radius:14px; background:rgba(255,255,255,0.04);
+  border:2px solid var(--line); color:var(--parchment); font-family:'Fraunces',serif; font-weight:600;
+  font-size:18px; cursor:pointer; display:flex; align-items:center; justify-content:center;
+  transition:all .15s ease;
+}
+.likert-pt:hover{border-color:var(--gold);}
+.likert-pt.sel{background:var(--gold); color:var(--ink); border-color:var(--gold); transform:scale(1.06);}
+.likert-labels{display:flex; justify-content:space-between; margin-top:10px; font-size:11.5px; color:var(--text-dim);}
+
+/* insight card */
+.insight{
+  margin-top:20px; background:rgba(62,142,138,0.12); border:1px solid rgba(62,142,138,0.4);
+  border-radius:14px; padding:18px 20px; display:none;
+}
+.insight.on{display:block; animation:rise .4s ease;}
+.insight .tag{
+  font-family:'JetBrains Mono', monospace; font-size:10.5px; letter-spacing:0.08em; text-transform:uppercase;
+  color:var(--teal); margin-bottom:8px; display:flex; align-items:center; gap:6px;
+}
+.insight p{font-size:14.5px; line-height:1.55; color:var(--parchment);}
+.insight-cite{font-size:12px; color:var(--text-dim); margin-top:8px; font-style:italic;}
+
+.qnav{display:flex; justify-content:space-between; align-items:center; margin-top:30px;}
+.linklike{background:none; border:none; color:var(--text-dim); font-size:14px; cursor:pointer; font-family:'Inter',sans-serif;}
+.linklike:hover{color:var(--parchment);}
+
+/* pure break card */
+#s-break .qtext{max-width:38ch;}
+.break-badge{
+  font-size:34px; margin-bottom:14px;
+}
+
+/* ---------- Outro ---------- */
+#s-outro{justify-content:center; text-align:left;}
+.tick{
+  width:52px; height:52px; border-radius:50%; background:var(--teal); display:flex; align-items:center;
+  justify-content:center; margin-bottom:22px; font-size:24px;
+}
+.mini-bars{display:flex; flex-direction:column; gap:14px; margin:26px 0;}
+.mrow{display:flex; align-items:center; gap:12px;}
+.mrow .ml{font-size:13px; color:var(--text-dim); width:150px; flex-shrink:0;}
+.mbg{flex:1; height:8px; background:rgba(255,255,255,0.08); border-radius:8px; overflow:hidden;}
+.mfill{height:100%; border-radius:8px; width:0%; transition:width 1s cubic-bezier(.2,.8,.3,1);}
+
+footer{
+  text-align:center; padding:20px; color:var(--text-dim); font-size:12px;
+}
+footer button{background:none; border:none; color:var(--text-dim); font-size:12px; text-decoration:underline; cursor:pointer;}
+
+/* ---------- Dashboard ---------- */
+#dash{display:none; width:100%; max-width:980px; padding:26px 20px 60px;}
+#dash.on{display:block;}
+.dash-head{display:flex; justify-content:space-between; align-items:center; margin-bottom:26px; flex-wrap:wrap; gap:12px;}
+.dash-title{font-family:'Fraunces',serif; font-size:26px; color:var(--gold); font-weight:600;}
+.grid4{display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:12px; margin-bottom:24px;}
+.metric{background:rgba(255,255,255,0.03); border:1px solid var(--line); border-radius:12px; padding:16px;}
+.metric .v{font-family:'Fraunces',serif; font-size:28px; color:var(--parchment); font-weight:600;}
+.metric .l{font-size:12px; color:var(--text-dim); margin-top:4px;}
+.dash-section{background:rgba(255,255,255,0.02); border:1px solid var(--line); border-radius:14px; padding:20px; margin-bottom:18px;}
+.dash-section h3{font-family:'Fraunces',serif; font-size:15px; color:var(--parchment); margin-bottom:16px; font-weight:600;}
+.dash-note{font-size:13px; color:var(--text-dim); line-height:1.6; margin-bottom:16px; max-width:70ch;}
+.corr-row{display:flex; align-items:center; gap:14px; margin-bottom:14px;}
+.corr-label{width:230px; flex-shrink:0; font-size:13.5px; color:var(--parchment);}
+.corr-track{flex:1; height:10px; background:rgba(255,255,255,0.06); border-radius:8px; position:relative;}
+.corr-mid{position:absolute; left:50%; top:-4px; bottom:-4px; width:1px; background:var(--line);}
+.corr-fill{position:absolute; top:0; bottom:0; border-radius:8px;}
+.corr-val{font-family:'JetBrains Mono', monospace; font-size:13px; width:56px; text-align:right; flex-shrink:0;}
+.hypo-item{margin-bottom:10px; font-size:13.5px; color:var(--text-dim); line-height:1.55;}
+.hypo-item b{color:var(--gold); font-family:'JetBrains Mono', monospace; font-size:12px;}
+table{width:100%; border-collapse:collapse; font-size:12.5px;}
+th,td{text-align:left; padding:8px 10px; border-bottom:1px solid var(--line); color:var(--parchment);}
+th{color:var(--text-dim); font-weight:500; font-size:11px; text-transform:uppercase; letter-spacing:0.04em;}
+.btnrow{display:flex; gap:10px; flex-wrap:wrap; margin-top:10px;}
+.btn-sm{
+  font-size:13px; padding:9px 15px; border-radius:9px; background:var(--parchment); color:var(--ink);
+  border:none; cursor:pointer; font-weight:600; font-family:'Inter',sans-serif;
+}
+.btn-sm:hover{background:#fff;}
+#lockscreen{display:flex; flex-direction:column; align-items:center; justify-content:center; min-height:60vh; text-align:center; gap:16px;}
+#lockscreen input{
+  background:rgba(255,255,255,0.05); border:1px solid var(--line); border-radius:10px; padding:12px 16px;
+  color:var(--parchment); font-size:15px; width:220px; text-align:center; font-family:'JetBrains Mono',monospace;
+}
+</style>
+</head>
+<body>
+
+<div class="stage" id="quizStage">
+  <div class="topbar">
+    <div class="brand">Finn <span>· enquête comportementale ESLSCA</span></div>
+    <div class="stamp" id="stampCounter">INTRO</div>
+  </div>
+  <div class="progress-track"><div class="progress-fill" id="progFill"></div></div>
+
+  <!-- INTRO -->
+  <div class="screen on" id="s-intro">
+    <div class="eyebrow">Mémoire de fin d'études · Master 2 Finance de marché</div>
+    <h1 class="hero">Comment percevez-vous <em>le risque</em> financier ?</h1>
+    <p class="lede">Cette enquête anonyme explore la manière dont les biais cognitifs et les outils d'intelligence artificielle influencent la perception du risque, chez les investisseurs comme chez les non-investisseurs. Sa longueur s'ajuste à votre profil : quelques questions rapides si vous connaissez peu le sujet, une version plus approfondie si vous êtes investisseur ou déjà familier des outils d'IA financiers. Elle alimente une recherche académique menée à l'ESLSCA Business School.</p>
+    <div class="facts-row">
+      <div class="fact-chip"><div class="n">5-12 min</div><div class="l">selon votre profil</div></div>
+      <div class="fact-chip"><div class="n">100%</div><div class="l">anonyme</div></div>
+      <div class="fact-chip"><div class="n">15-25</div><div class="l">questions adaptées</div></div>
+    </div>
+    <button class="btn" onclick="startQuiz()">Commencer →</button>
+    <p class="privacy">Aucune donnée personnelle identifiable n'est collectée. Les réponses sont agrégées à des fins exclusivement académiques.</p>
+  </div>
+
+  <!-- QUESTION -->
+  <div class="screen" id="s-question">
+    <div class="qwrap">
+      <div class="qcounter"><b id="qNum">1</b><span id="qTotal" style="font-size:9px;">/ 7+</span></div>
+      <div class="qsection" id="qSection">DEMOGRAPHIE</div>
+      <div class="qtext" id="qText">…</div>
+      <div id="qBody"></div>
+      <div class="qnav">
+        <button class="linklike" id="btnBack" onclick="goBack()">← Précédent</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- INSIGHT (shown after answering, as its own screen - not inline below the question) -->
+  <div class="screen" id="s-insight">
+    <div class="qwrap">
+      <div class="break-badge">💡</div>
+      <div class="qsection">Repère académique</div>
+      <div class="qtext" id="insightText" style="font-size:20px;">…</div>
+      <button class="btn" onclick="continueAfterInsight()">Continuer →</button>
+    </div>
+  </div>
+
+  <!-- BREAK -->
+  <div class="screen" id="s-break">
+    <div class="qwrap">
+      <div class="break-badge" id="breakBadge">📊</div>
+      <div class="qsection">Pause repère</div>
+      <div class="qtext" id="breakText">…</div>
+      <div class="insight-cite" id="breakCite" style="margin-bottom:20px;"></div>
+      <button class="btn" onclick="goNext()">Continuer →</button>
+    </div>
+  </div>
+
+  <!-- OUTRO -->
+  <div class="screen" id="s-outro">
+    <div class="tick">✓</div>
+    <h1 class="hero" style="font-size:30px;">Merci pour votre contribution.</h1>
+    <p class="lede">Voici un aperçu - purement indicatif - de vos réponses sur les quatre dimensions étudiées. Ce profil n'a pas de valeur diagnostique individuelle : il illustre simplement la logique de mesure utilisée dans l'enquête.</p>
+    <div class="mini-bars" id="miniBars"></div>
+    <div id="compareBlock" style="margin-top:8px;"></div>
+    <button class="btn btn-ghost" onclick="location.reload()">Répondre à nouveau</button>
+    <p class="privacy" style="margin-top:22px;">Vous pouvez fermer cette page. Merci d'avoir consacré quelques minutes à cette recherche.</p>
+  </div>
+</div>
+
+<footer id="footerLink"><button onclick="tryUnlock()">Espace chercheur</button></footer>
+
+<!-- Netlify Forms: must exist statically in the deployed HTML so Netlify's build-time
+     bot can detect it. Hidden from view; submitted via fetch() in finishQuiz(). This is
+     the reliable data-capture path once the file is hosted on Netlify (window.storage
+     may not be available outside a Claude-rendered artifact). -->
+<form name="reponses" data-netlify="true" netlify-honeypot="bot-field" hidden>
+  <input type="text" name="bot-field" />
+  <input type="text" name="date" /><input type="text" name="tier" />
+  <input type="text" name="age" /><input type="text" name="gender" />
+  <input type="text" name="edu" /><input type="text" name="status" />
+  <input type="text" name="investor" /><input type="text" name="ai_use" />
+  <input type="text" name="fl" /><input type="text" name="ob" />
+  <input type="text" name="la" /><input type="text" name="ab" />
+  <input type="text" name="rp" /><input type="text" name="ai" />
+  <textarea name="data"></textarea>
+</form>
+
+<!-- DASHBOARD -->
+<div id="dash">
+  <div id="lockscreen">
+    <div class="eyebrow">Accès restreint</div>
+    <p style="color:var(--text-dim); max-width:36ch;">Entrez le code chercheur pour consulter le tableau de bord.</p>
+    <input type="password" id="pinInput" placeholder="Code">
+    <button class="btn" onclick="checkPin()">Déverrouiller</button>
+    <button class="linklike" onclick="closeDash()">← Retour à l'enquête</button>
+  </div>
+  <div id="dashContent" style="display:none;">
+    <div class="dash-head">
+      <div class="dash-title">Tableau de bord - Enquête risque & IA</div>
+      <div class="btnrow">
+        <button class="btn-sm" onclick="exportCSV()">↓ Export CSV</button>
+        <button class="btn-sm" onclick="exportJSON()">↓ Export JSON (données brutes)</button>
+        <button class="btn-sm" onclick="exportSummary()">↓ Résumé mémoire</button>
+        <button class="linklike" onclick="closeDash()">Fermer</button>
+      </div>
+    </div>
+    <div class="grid4" id="dashMetrics"></div>
+    <div class="dash-section">
+      <h3>Moyennes par dimension (échelle 0-100)</h3>
+      <div id="dashBars"></div>
+    </div>
+    <div class="dash-section">
+      <h3>Répartition investisseurs / non-investisseurs</h3>
+      <div id="dashSplit"></div>
+    </div>
+    <div class="dash-section">
+      <h3>Usage des outils d'IA</h3>
+      <div id="dashAI"></div>
+    </div>
+    <div class="dash-section" id="hypoIntro">
+      <h3>📖 Comment lire ce qui suit</h3>
+      <div id="hypoIntroText"></div>
+    </div>
+    <div class="dash-section">
+      <h3>Tableau croisé - Statut investisseur × Usage de l'IA (lecture H3)</h3>
+      <p class="dash-note">H3 postule que les investisseurs utilisant des outils d'IA présentent une perception du risque distincte des non-utilisateurs et des non-investisseurs. Le tableau ci-dessous compare la perception du risque (RP) et les trois biais entre quatre segments.</p>
+      <div style="overflow-x:auto;"><table id="dashCross"></table></div>
+    </div>
+    <div class="dash-section">
+      <h3>Corrélations descriptives - biais et perception du risque (lecture H1 & H2)</h3>
+      <p class="dash-note">Coefficient de corrélation de Pearson (r) entre chaque variable et la perception du risque (RP), calculé sur l'échantillon actuel. Un r proche de 0 indique une absence de relation linéaire ; proche de ±1, une relation forte. <strong>Ceci est un indicateur exploratoire, pas un test d'hypothèse formel</strong> - le test définitif (régression / PLS-SEM, avec p-values) sera conduit séparément une fois la collecte terminée.</p>
+      <div id="dashCorr"></div>
+    </div>
+    <div class="dash-section">
+      <h3>Dernières réponses</h3>
+      <div style="overflow-x:auto;"><table id="dashTable"></table></div>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ============================================================
+   QUESTION BANK
+   type: 'choice' | 'likert'
+   dim : demo | ob | la | ab | rp | ai   (for scoring)
+   ============================================================ */
+const Q = [
+{id:'age', type:'choice', section:'Profil', dim:'demo', text:"Dans quelle tranche d'âge vous situez-vous ?",
+  options:['Moins de 18 ans','18 - 24 ans','25 - 34 ans','35 - 44 ans','45 - 54 ans','55 ans et plus']},
+
+{id:'gender', type:'choice', section:'Profil', dim:'demo', text:'Vous êtes…',
+  options:['Une femme','Un homme','Autre','Je préfère ne pas répondre']},
+
+{id:'edu', type:'choice', section:'Profil', dim:'demo', text:"Quel est votre niveau d'études ?",
+  options:['Bac ou inférieur','Bac +2 / +3','Bac +4 / +5','Doctorat ou équivalent']},
+
+{id:'status', type:'choice', section:'Profil', dim:'demo', text:'Quelle est votre situation actuelle ?',
+  options:['Étudiant(e)','Salarié(e)','Indépendant(e) / entrepreneur','Sans emploi','Retraité(e)']},
+
+{id:'investor', type:'choice', section:'Profil', dim:'demo', text:"Investissez-vous actuellement dans des actifs financiers (actions, ETF, obligations, cryptoactifs...) ?",
+  options:['Oui, activement','Oui, occasionnellement','Non, jamais'],
+  insight:"La littérature en finance comportementale porte presque exclusivement sur des investisseurs déjà actifs. La perception du risque des non-investisseurs reste largement inexplorée - c'est précisément la lacune que cette recherche cherche à combler."},
+
+{id:'ai_use', type:'choice', section:'Profil', dim:'demo', text:"Utilisez-vous des outils d'intelligence artificielle pour des décisions financières (robo-advisor, chatbot financier, application de trading avec signaux IA, analyse prédictive) ?",
+  options:['Oui, régulièrement','Oui, occasionnellement','Jamais'],
+  insight:"Les outils d'IA financiers ne sont plus réservés aux institutions : ils sont aujourd'hui accessibles à tout détenteur d'un téléphone mobile, ce qui redéfinit qui est exposé aux biais qu'ils peuvent induire."},
+
+{id:'fl', type:'likert', section:'Profil', dim:'demo', text:"Comment évaluez-vous votre niveau de connaissances financières ?",
+  labels:['Très faible','Faible','Moyen','Bon','Expert'],
+  insight:"La littératie financière est souvent présentée comme un facteur qui calibre mieux la perception du risque, mais certaines études montrent qu'elle ne suffit pas à elle seule à corriger l'excès de confiance, y compris chez des investisseurs bien formés."},
+
+{type:'break', badge:'🧠', text:"Les prochaines questions portent sur la manière dont vous jugez vos propres décisions financières.", cite:"Section : Excès de confiance"},
+
+{id:'ob1', type:'likert', section:'Jugement personnel', dim:'ob', text:"Mes décisions financières sont généralement meilleures que celles de la plupart des gens.",
+  insight:"Ce type d'affirmation illustre l'excès de confiance : la quasi-totalité des individus interrogés se jugent au-dessus de la moyenne, une impossibilité statistique qui révèle l'ampleur de ce biais."},
+
+{id:'ob2', type:'likert', section:'Jugement personnel', dim:'ob', text:"Je suis capable de prévoir avec une bonne précision l'évolution des marchés financiers."},
+
+{id:'ob3', type:'likert', section:'Jugement personnel', dim:'ob', level:2, text:"Mes réussites financières passées s'expliquent surtout par mes compétences plutôt que par la chance ou le contexte.",
+  insight:"Ce mécanisme est appelé biais d'auto-attribution : les succès sont attribués aux compétences personnelles, les échecs à des causes externes - un déséquilibre qui entretient l'excès de confiance dans la durée."},
+
+{id:'ob4', type:'likert', section:'Jugement personnel', dim:'ob', level:3, text:"Je modifie fréquemment mes placements, convaincu(e) de pouvoir améliorer mes résultats."},
+
+{id:'ob5', type:'likert', section:'Jugement personnel', dim:'ob', level:3, text:"Je fais davantage confiance à ma propre analyse qu'à celle d'un professionnel."},
+
+{id:'ob6', type:'likert', section:'Jugement personnel', dim:'ob', level:3, text:"Quand une de mes décisions financières échoue, j'ai tendance à l'attribuer à des circonstances extérieures plutôt qu'à mon propre jugement."},
+
+{type:'break', badge:'⚖️', text:"On s'intéresse maintenant à votre rapport aux pertes potentielles.", cite:"Section : Aversion aux pertes"},
+
+{id:'la1', type:'likert', section:'Rapport aux pertes', dim:'la', text:"Perdre une somme d'argent m'affecte davantage que gagner la même somme ne me réjouit.",
+  insight:"C'est le cœur de la théorie des perspectives de Kahneman et Tversky (1979) : la douleur d'une perte est ressentie environ deux fois plus intensément que le plaisir d'un gain équivalent."},
+
+{id:'la2', type:'likert', section:'Rapport aux pertes', dim:'la', text:"Je préfère éviter une perte certaine, même si cela signifie renoncer à un gain potentiellement plus élevé."},
+
+{id:'la3', type:'likert', section:'Rapport aux pertes', dim:'la', level:2, text:"Je garde souvent un placement en perte en espérant qu'il remonte, plutôt que de le vendre.",
+  insight:"Ce comportement correspond à l'effet de disposition : la vente d'un actif en perte étant psychologiquement douloureuse, les investisseurs la reportent, parfois au détriment de leur portefeuille."},
+
+{id:'la4', type:'likert', section:'Rapport aux pertes', dim:'la', level:3, text:"Une baisse de 10 % de mon épargne m'inquiéterait plus qu'une hausse de 10 % ne me réjouirait."},
+
+{id:'la5', type:'likert', section:'Rapport aux pertes', dim:'la', level:3, text:"Je privilégie les placements à capital garanti, même si leur rendement est plus faible."},
+
+{id:'la6', type:'likert', section:'Rapport aux pertes', dim:'la', level:3, text:"Il m'est difficile d'accepter de réaliser une perte, même minime."},
+
+{type:'break', badge:'⚓', text:"Ces questions portent sur les repères qui influencent vos jugements financiers.", cite:"Section : Biais d'ancrage"},
+
+{id:'ab1', type:'likert', section:'Points de repère', dim:'ab', text:"Le prix auquel j'ai acheté un actif influence fortement mon jugement sur sa valeur actuelle.",
+  insight:"Ce mécanisme illustre le biais d'ancrage : une valeur initiale, même arbitraire, continue d'influencer les jugements ultérieurs, indépendamment des fondamentaux réels de l'actif."},
+
+{id:'ab2', type:'likert', section:'Points de repère', dim:'ab', text:"Une première information (un prix affiché, un chiffre annoncé) influence durablement mon estimation, même quand de nouvelles informations apparaissent."},
+
+{id:'ab3', type:'likert', section:'Points de repère', dim:'ab', level:2, text:"Je me fie fortement aux signaux ou objectifs de cours fournis par une application ou une plateforme.",
+  insight:"Des recherches récentes montrent que les signaux générés par des outils d'IA deviennent de nouvelles ancres cognitives, parfois plus persistantes que les ancres naturelles car perçues comme objectives - un phénomène désigné sous le terme d'« automation bias »."},
+
+{id:'ab4', type:'likert', section:'Points de repère', dim:'ab', level:3, text:"J'ai du mal à réviser une opinion financière une fois qu'elle est formée."},
+
+{id:'ab5', type:'likert', section:'Points de repère', dim:'ab', level:3, text:"Les recommandations d'un outil automatisé me semblent plus fiables qu'un jugement personnel non assisté."},
+
+{type:'break', badge:'🌡️', text:"Passons à votre perception générale du risque financier.", cite:"Section : Perception du risque"},
+
+{id:'rp1', type:'likert', section:'Perception du risque', dim:'rp', text:"Investir sur les marchés financiers me semble risqué.",
+  insight:"La perception du risque se distingue du risque objectif mesuré par la variance des rendements : elle renvoie à la manière subjective dont chacun évalue l'incertitude, indépendamment des statistiques réelles du marché."},
+
+{id:'rp2', type:'likert', section:'Perception du risque', dim:'rp', text:"Je me sens à l'aise à l'idée de perdre une partie de mon capital investi."},
+
+{id:'rp3', type:'likert', section:'Perception du risque', dim:'rp', level:3, text:"J'évite les placements dont je ne comprends pas parfaitement le fonctionnement."},
+
+{id:'rp4', type:'likert', section:'Perception du risque', dim:'rp', level:2, text:"Le risque fait, selon moi, partie intégrante de toute stratégie d'investissement efficace.",
+  insight:"Certaines études montrent qu'une perception du risque bien calibrée peut favoriser l'intention d'investir, contrairement à l'idée reçue selon laquelle percevoir davantage de risque décourage systématiquement d'investir."},
+
+{id:'rp5', type:'likert', section:'Perception du risque', dim:'rp', level:3, text:"Le contexte économique actuel influence ma perception du risque financier."},
+
+{id:'rp6', type:'likert', section:'Perception du risque', dim:'rp', level:3, text:"Je me sens capable d'évaluer correctement le niveau de risque d'un placement."},
+
+{type:'break', badge:'🤖', text:"Dernière section : votre rapport aux outils d'intelligence artificielle appliqués à la finance.", cite:"Section : Intelligence artificielle"},
+
+{id:'ai1', type:'likert', section:"Rapport à l'IA", dim:'ai', level:2, text:"Les outils d'IA (robo-advisors, chatbots financiers, applications de trading) rendent les décisions financières plus faciles à prendre.",
+  insight:"Le modèle d'acceptation de la technologie (TAM, Davis, 1989) explique l'adoption d'un outil par deux facteurs : l'utilité perçue et la facilité d'utilisation perçue - deux dimensions directement mesurées par cette question."},
+
+{id:'ai2', type:'likert', section:"Rapport à l'IA", dim:'ai', level:3, text:"Je fais confiance aux recommandations générées par une intelligence artificielle en matière financière."},
+
+{id:'ai3', type:'likert', section:"Rapport à l'IA", dim:'ai', level:3, text:"Utiliser un outil d'IA pour investir me semble simple et accessible."},
+
+{id:'ai4', type:'likert', section:"Rapport à l'IA", dim:'ai', level:3, text:"Je pense qu'un outil d'IA prend de meilleures décisions financières qu'un individu seul.",
+  insight:"Des recherches récentes révèlent un effet paradoxal : l'usage des outils d'IA réduit l'aversion aux pertes des utilisateurs, mais amplifie simultanément leur excès de confiance et leur biais d'ancrage."},
+
+{id:'ai5', type:'likert', section:"Rapport à l'IA", dim:'ai', level:3, text:"L'utilisation d'outils d'IA réduit mon inquiétude face au risque financier."},
+
+{id:'ai6', type:'likert', section:"Rapport à l'IA", dim:'ai', level:3, text:"Je remets rarement en question une recommandation fournie par un outil d'IA.",
+  insight:"Faire davantage confiance à une recommandation algorithmique qu'à son propre jugement, sans la questionner, est l'un des mécanismes documentés de renforcement du biais d'ancrage à l'ère de l'IA."},
+
+{id:'ai7', type:'likert', section:"Rapport à l'IA", dim:'ai', level:3, text:"Je pense utiliser davantage d'outils d'IA financiers dans les années à venir."},
+];
+
+const LIKERT_LABELS = ['Pas du tout d\'accord','Plutôt pas d\'accord','Neutre','Plutôt d\'accord','Tout à fait d\'accord'];
+
+// Sequence is rebuilt once the profile section is complete, based on the
+// respondent's declared experience (investor status, AI usage, financial literacy).
+// This keeps the survey short (~16 items) for less-engaged respondents and
+// unlocks the full battery (~37 items) for experienced ones.
+let SEQ = Q;
+let ANSWERABLE = Q.filter(q=>q.type!=='break').length;
+let tierApplied = false;
+let currentTier = null;
+
+let idx = -1; // pointer into SEQ, -1 = intro
+let answers = {};
+let history = [];
+
+function calcTier(){
+  let e = 0;
+  if(answers.investor===0) e+=2; else if(answers.investor===1) e+=1;
+  if(answers.ai_use===0) e+=2; else if(answers.ai_use===1) e+=1;
+  if(answers.fl>=4) e+=2; else if(answers.fl===3) e+=1;
+  if(e<=1) return 'short';
+  if(e<=3) return 'medium';
+  return 'deep';
+}
+
+function applyTier(){
+  currentTier = calcTier();
+  const profile = Q.slice(0,7);
+  const pool = Q.slice(7);
+
+  const level1 = pool.filter(i=>i.type!=='break' && (i.level||1)===1);
+  const level2 = pool.filter(i=>i.type!=='break' && i.level===2);
+  const level3ByDim = {};
+  pool.filter(i=>i.type!=='break' && i.level===3).forEach(i=>{
+    (level3ByDim[i.dim] = level3ByDim[i.dim] || []).push(i);
+  });
+
+  let selected;
+  if(currentTier === 'short'){
+    selected = level1; // 8 items -> 15 with profile
+  } else if(currentTier === 'medium'){
+    selected = level1.concat(level2); // 13 items -> 20 with profile
+  } else {
+    // deep: core items + one randomly-sampled item per dimension from the
+    // "deep pool". This keeps every respondent capped at 25 questions while
+    // ensuring the full 37-item bank still gets answered across the sample.
+    const extra = Object.keys(level3ByDim).map(dim=>{
+      const options = level3ByDim[dim];
+      return options[Math.floor(Math.random() * options.length)];
+    });
+    selected = level1.concat(level2).concat(extra); // 18 items -> 25 with profile
+  }
+
+  const selectedIds = new Set(selected.map(i=>i.id));
+  const rest = pool.filter(i => i.type==='break' || selectedIds.has(i.id));
+  SEQ = profile.concat(rest);
+  ANSWERABLE = SEQ.filter(q=>q.type!=='break').length;
+  const qt = document.getElementById('qTotal');
+  if(qt) qt.textContent = '/ ' + ANSWERABLE;
+}
+
+function startQuiz(){
+  swap('s-question');
+  idx = 0;
+  renderCurrent();
+}
+
+function swap(id){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('on'));
+  document.getElementById(id).classList.add('on');
+}
+
+function answeredSoFar(){
+  return SEQ.slice(0, idx).filter(q=>q.type!=='break').length;
+}
+
+function updateProgress(){
+  const done = answeredSoFar();
+  const pct = Math.min(100, Math.round((done/ANSWERABLE)*100));
+  document.getElementById('progFill').style.width = pct+'%';
+  document.getElementById('stampCounter').textContent = pct+'%';
+}
+
+function renderCurrent(){
+  const item = SEQ[idx];
+  updateProgress();
+
+  if(item.type === 'break'){
+    swap('s-break');
+    document.getElementById('breakBadge').textContent = item.badge;
+    document.getElementById('breakText').textContent = item.text;
+    document.getElementById('breakCite').textContent = item.cite;
+    return;
+  }
+
+  swap('s-question');
+  const qNumDisplay = SEQ.slice(0, idx+1).filter(q=>q.type!=='break').length;
+  document.getElementById('qNum').textContent = qNumDisplay;
+  document.getElementById('qSection').textContent = item.section;
+  document.getElementById('qText').textContent = item.text;
+  document.getElementById('btnBack').style.visibility = idx===0 ? 'hidden':'visible';
+
+  const body = document.getElementById('qBody');
+  body.innerHTML = '';
+
+  if(item.type === 'choice'){
+    const wrap = document.createElement('div');
+    wrap.className = 'options';
+    item.options.forEach((opt,i)=>{
+      const b = document.createElement('button');
+      b.className = 'opt'; b.textContent = opt;
+      if(answers[item.id] === i) b.classList.add('sel');
+      b.onclick = ()=>selectChoice(item, i, wrap, b);
+      wrap.appendChild(b);
+    });
+    body.appendChild(wrap);
+  } else if(item.type === 'likert'){
+    const row = document.createElement('div');
+    row.className = 'likert-row';
+    for(let i=1;i<=5;i++){
+      const b = document.createElement('div');
+      b.className = 'likert-pt'; b.textContent = i;
+      if(answers[item.id] === i) b.classList.add('sel');
+      b.onclick = ()=>selectLikert(item, i, row, b);
+      row.appendChild(b);
+    }
+    body.appendChild(row);
+    const lab = document.createElement('div');
+    lab.className = 'likert-labels';
+    lab.innerHTML = `<span>${LIKERT_LABELS[0]}</span><span>${LIKERT_LABELS[4]}</span>`;
+    body.appendChild(lab);
+  }
+}
+
+function selectChoice(item, i, wrap, btn){
+  answers[item.id] = i;
+  wrap.querySelectorAll('.opt').forEach(o=>o.classList.remove('sel'));
+  btn.classList.add('sel');
+  afterAnswer(item);
+}
+
+function selectLikert(item, i, row, btn){
+  answers[item.id] = i;
+  row.querySelectorAll('.likert-pt').forEach(o=>o.classList.remove('sel'));
+  btn.classList.add('sel');
+  afterAnswer(item);
+}
+
+// After answering: if the item has an academic insight, show it as its own
+// screen (not inline below the question) before moving on. Otherwise,
+// auto-advance straight to the next item.
+function afterAnswer(item){
+  if(item.insight){
+    setTimeout(()=>{
+      swap('s-insight');
+      document.getElementById('insightText').textContent = item.insight;
+    }, 200);
+  } else {
+    setTimeout(()=>goNext(), 260);
+  }
+}
+
+function continueAfterInsight(){
+  goNext();
+}
+
+function goNext(){
+  if(idx===6 && !tierApplied){
+    applyTier();
+    tierApplied = true;
+  }
+  if(idx < SEQ.length-1){
+    idx++;
+    renderCurrent();
+  } else {
+    finishQuiz();
+  }
+}
+function goBack(){
+  if(idx>0){ idx--; renderCurrent(); }
+}
+
+function dimScore(dim){
+  const items = Q.filter(q=>q.dim===dim && q.type==='likert');
+  let sum=0, n=0;
+  items.forEach(q=>{ if(answers[q.id]!==undefined){ sum+=answers[q.id]; n++; } });
+  if(n===0) return 0;
+  return Math.round(((sum/n - 1)/4) * 100); // scale 1-5 -> 0-100
+}
+
+async function finishQuiz(){
+  const record = {
+    ts: Date.now(),
+    tier: currentTier,
+    age: answers.age, gender: answers.gender, edu: answers.edu, status: answers.status,
+    investor: answers.investor, ai_use: answers.ai_use, fl: answers.fl,
+    ob: dimScore('ob'), la: dimScore('la'), ab: dimScore('ab'), rp: dimScore('rp'), ai: dimScore('ai'),
+    raw: answers
+  };
+  // Path 1: Claude artifact storage - works when this page is opened as a
+  // Claude-rendered artifact, not guaranteed once hosted standalone on Netlify.
+  try{
+    const key = 'resp_' + Date.now() + '_' + Math.random().toString(36).slice(2,8);
+    await window.storage.set(key, JSON.stringify(record), true);
+  }catch(e){ console.error('Storage error (window.storage)', e); }
+
+  // Path 2: Netlify Forms - the reliable capture path once deployed via
+  // Netlify Drop / GitHub. Silently no-ops (404) if hosted elsewhere.
+  try{
+    const r = await fetch(window.location.pathname, {
+      method: 'POST',
+      headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+      body: new URLSearchParams({
+        'form-name': 'reponses',
+        'bot-field': '', // honeypot - must be present and empty or Netlify silently drops the submission
+        date: new Date(record.ts).toISOString(),
+        tier: record.tier,
+        age: record.age, gender: record.gender, edu: record.edu, status: record.status,
+        investor: record.investor, ai_use: record.ai_use, fl: record.fl,
+        ob: record.ob, la: record.la, ab: record.ab, rp: record.rp, ai: record.ai,
+        data: JSON.stringify(record)
+      }).toString()
+    });
+    console.log('Netlify Forms submission status:', r.status, r.ok ? 'OK' : 'FAILED - check Site > Forms in Netlify, and confirm the file was deployed as index.html');
+  }catch(e){ console.error('Storage error (Netlify Forms)', e); }
+
+  swap('s-outro');
+  document.getElementById('progFill').style.width='100%';
+  document.getElementById('stampCounter').textContent='100%';
+
+  const dims = [
+    {k:'ob', label:'Excès de confiance', color:'#E8A33D'},
+    {k:'la', label:'Aversion aux pertes', color:'#D46A5C'},
+    {k:'ab', label:'Biais d\'ancrage', color:'#3E8E8A'},
+    {k:'rp', label:'Perception du risque', color:'#8891A8'},
+    {k:'ai', label:"Rapport à l'IA", color:'#F3B457'}
+  ];
+  const wrap = document.getElementById('miniBars');
+  wrap.innerHTML='';
+  dims.forEach(d=>{
+    const v = record[d.k];
+    wrap.innerHTML += `<div class="mrow"><span class="ml">${d.label}</span><div class="mbg"><div class="mfill" style="background:${d.color}" data-w="${v}%"></div></div></div>`;
+  });
+  setTimeout(()=>{ document.querySelectorAll('.mfill').forEach(el=>{ el.style.width = el.dataset.w; }); }, 200);
+
+  renderComparison(record);
+}
+
+// Comparison against prior respondents, served by the backend function
+// (netlify/functions/get-stats.js), which reads Netlify Forms submissions
+// server-side. Falls back to a simple message if the function isn't
+// deployed yet or there aren't enough responses.
+async function renderComparison(record){
+  const box = document.getElementById('compareBlock');
+  let others = [];
+  try{
+    const res = await fetch('/.netlify/functions/get-stats');
+    if(res.ok) others = await res.json();
+  }catch(e){ console.error('get-stats fetch failed', e); }
+
+  if(!Array.isArray(others) || others.length < 5){
+    box.innerHTML = `<p class="privacy">La comparaison avec les autres participants s'affichera ici une fois davantage de réponses collectées.</p>`;
+    return;
+  }
+
+  const dims = [
+    {k:'ob', label:"d'excès de confiance"},
+    {k:'la', label:"d'aversion aux pertes"},
+    {k:'ab', label:"de biais d'ancrage"},
+    {k:'ai', label:"de rapport à l'IA"}
+  ];
+  let html = `<p class="privacy" style="margin-bottom:10px;">Comparaison avec les ${others.length} autres participants ayant déjà répondu :</p>`;
+  dims.forEach(d=>{
+    const below = others.filter(o=> typeof o[d.k]==='number' && o[d.k] < record[d.k]).length;
+    const pct = Math.round((below/others.length)*100);
+    html += `<p class="privacy">Votre score ${d.label} est plus élevé que celui de ${pct}% des autres participants.</p>`;
+  });
+  box.innerHTML = html;
+}
+
+/* ============================================================
+   DASHBOARD
+   ============================================================ */
+// Client-side gate only (cosmetic). Real protection happens server-side:
+// the backend function checks this same value against DASHBOARD_KEY
+// before returning the full dataset.
+const PIN = '2026';
+let enteredPin = null;
+
+function tryUnlock(){
+  document.getElementById('quizStage').style.display='none';
+  document.getElementById('footerLink').style.display='none';
+  document.getElementById('dash').classList.add('on');
+}
+function closeDash(){
+  document.getElementById('dash').classList.remove('on');
+  document.getElementById('quizStage').style.display='flex';
+  document.getElementById('footerLink').style.display='block';
+}
+function checkPin(){
+  const val = document.getElementById('pinInput').value;
+  if(val === PIN){
+    enteredPin = val;
+    document.getElementById('lockscreen').style.display='none';
+    document.getElementById('dashContent').style.display='block';
+    loadDash();
+  } else {
+    document.getElementById('pinInput').style.borderColor = 'var(--coral)';
+  }
+}
+
+async function fetchAllResponses(){
+  try{
+    const res = await fetch(`/.netlify/functions/get-stats?full=true&key=${encodeURIComponent(enteredPin || PIN)}`);
+    if(!res.ok){
+      console.error('get-stats (full) responded', res.status);
+      return [];
+    }
+    const data = await res.json();
+    if(data && data.error){ console.error('get-stats error:', data.error); return []; }
+    data.sort((a,b)=> (b.ts||0) - (a.ts||0));
+    return data;
+  }catch(e){
+    console.error('fetchAllResponses failed', e);
+    return [];
+  }
+}
+
+async function loadDash(){
+  const data = await fetchAllResponses();
+  const n = data.length;
+  const avg = k => n? Math.round(data.reduce((s,r)=>s+(r[k]||0),0)/n) : 0;
+  const investors = data.filter(r=>r.investor===0).length;
+  const occasional = data.filter(r=>r.investor===1).length;
+  const non = data.filter(r=>r.investor===2).length;
+  const aiReg = data.filter(r=>r.ai_use===0).length;
+  const aiOcc = data.filter(r=>r.ai_use===1).length;
+  const aiNo = data.filter(r=>r.ai_use===2).length;
+
+  document.getElementById('dashMetrics').innerHTML = `
+    <div class="metric"><div class="v">${n}</div><div class="l">réponses collectées</div></div>
+    <div class="metric"><div class="v">${investors}</div><div class="l">investisseurs actifs</div></div>
+    <div class="metric"><div class="v">${non}</div><div class="l">non-investisseurs</div></div>
+    <div class="metric"><div class="v">${aiReg}</div><div class="l">utilisateurs réguliers d'IA</div></div>
+  `;
+
+  const dims = [['ob','Excès de confiance','#E8A33D'],['la','Aversion aux pertes','#D46A5C'],['ab','Biais d\'ancrage','#3E8E8A'],['rp','Perception du risque','#8891A8'],['ai',"Rapport à l'IA",'#F3B457']];
+  document.getElementById('dashBars').innerHTML = dims.map(([k,l,c])=>{
+    const v = avg(k);
+    return `<div class="mrow" style="margin-bottom:12px;"><span class="ml">${l}</span><div class="mbg"><div class="mfill" style="background:${c};width:${v}%"></div></div><span style="font-size:12px;color:var(--text-dim);width:34px;">${v}</span></div>`;
+  }).join('');
+
+  document.getElementById('dashSplit').innerHTML = `
+    <div class="mrow"><span class="ml">Investisseurs actifs</span><div class="mbg"><div class="mfill" style="background:#E8A33D;width:${n?investors/n*100:0}%"></div></div><span style="font-size:12px;color:var(--text-dim);width:34px;">${investors}</span></div>
+    <div class="mrow" style="margin-top:10px;"><span class="ml">Investisseurs occasionnels</span><div class="mbg"><div class="mfill" style="background:#3E8E8A;width:${n?occasional/n*100:0}%"></div></div><span style="font-size:12px;color:var(--text-dim);width:34px;">${occasional}</span></div>
+    <div class="mrow" style="margin-top:10px;"><span class="ml">Non-investisseurs</span><div class="mbg"><div class="mfill" style="background:#D46A5C;width:${n?non/n*100:0}%"></div></div><span style="font-size:12px;color:var(--text-dim);width:34px;">${non}</span></div>
+  `;
+  document.getElementById('dashAI').innerHTML = `
+    <div class="mrow"><span class="ml">Réguliers</span><div class="mbg"><div class="mfill" style="background:#E8A33D;width:${n?aiReg/n*100:0}%"></div></div><span style="font-size:12px;color:var(--text-dim);width:34px;">${aiReg}</span></div>
+    <div class="mrow" style="margin-top:10px;"><span class="ml">Occasionnels</span><div class="mbg"><div class="mfill" style="background:#3E8E8A;width:${n?aiOcc/n*100:0}%"></div></div><span style="font-size:12px;color:var(--text-dim);width:34px;">${aiOcc}</span></div>
+    <div class="mrow" style="margin-top:10px;"><span class="ml">Jamais</span><div class="mbg"><div class="mfill" style="background:#D46A5C;width:${n?aiNo/n*100:0}%"></div></div><span style="font-size:12px;color:var(--text-dim);width:34px;">${aiNo}</span></div>
+  `;
+
+  document.getElementById('hypoIntroText').innerHTML = `
+    <div class="hypo-item"><b>H1</b> - Les biais cognitifs (excès de confiance, aversion aux pertes, ancrage) influencent significativement la perception du risque. → voir le panneau "Corrélations descriptives", lignes OB / LA / AB.</div>
+    <div class="hypo-item"><b>H2</b> - L'utilisation des outils d'IA influence significativement la perception du risque. → voir le panneau "Corrélations descriptives", lignes IA.</div>
+    <div class="hypo-item"><b>H3</b> - Les investisseurs utilisant l'IA présentent une perception du risque distincte des non-utilisateurs et des non-investisseurs. → voir le "Tableau croisé" ci-dessous.</div>
+    <div class="hypo-item" style="margin-top:12px; padding-top:12px; border-top:1px solid var(--line);">Ces deux outils donnent une lecture <b style="color:var(--parchment);">descriptive et exploratoire</b>, utile pour suivre la collecte en direct (chapitre 4.1) et orienter l'interprétation. Ils ne remplacent pas le test formel des hypothèses (chapitre 4.3), qui nécessite une régression ou un modèle PLS-SEM avec coefficients et p-values, à mener une fois l'échantillon cible atteint.</div>
+  `;
+
+  /* ---- Cross-tab: investor status × AI usage (H3) ---- */
+  const segments = [
+    {label:'Investisseur · utilise l\'IA', test:r=>r.investor!==2 && r.ai_use!==2, color:'#E8A33D'},
+    {label:'Investisseur · n\'utilise pas l\'IA', test:r=>r.investor!==2 && r.ai_use===2, color:'#3E8E8A'},
+    {label:'Non-investisseur · utilise l\'IA', test:r=>r.investor===2 && r.ai_use!==2, color:'#D46A5C'},
+    {label:'Non-investisseur · n\'utilise pas l\'IA', test:r=>r.investor===2 && r.ai_use===2, color:'#8891A8'},
+  ];
+  const segRows = segments.map(seg=>{
+    const rows = data.filter(seg.test);
+    const sn = rows.length;
+    const m = k => sn? Math.round(rows.reduce((s,r)=>s+(r[k]||0),0)/sn) : null;
+    return {...seg, n:sn, rp:m('rp'), ob:m('ob'), la:m('la'), ab:m('ab')};
+  });
+  document.getElementById('dashCross').innerHTML = `
+    <tr><th>Segment</th><th>n</th><th>RP moyen</th><th>OB</th><th>LA</th><th>AB</th></tr>
+    ${segRows.map(s=>`
+      <tr>
+        <td><span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:${s.color};margin-right:8px;"></span>${s.label}</td>
+        <td>${s.n}</td>
+        <td>${s.rp ?? '-'}</td><td>${s.ob ?? '-'}</td><td>${s.la ?? '-'}</td><td>${s.ab ?? '-'}</td>
+      </tr>`).join('')}
+  `;
+
+  /* ---- Pearson correlations with RP (H1 & H2) ---- */
+  function pearson(xs, ys){
+    const m = xs.length;
+    if(m<3) return null;
+    const mx = xs.reduce((a,b)=>a+b,0)/m, my = ys.reduce((a,b)=>a+b,0)/m;
+    let num=0, dx2=0, dy2=0;
+    for(let i=0;i<m;i++){ const dx=xs[i]-mx, dy=ys[i]-my; num+=dx*dy; dx2+=dx*dx; dy2+=dy*dy; }
+    const den = Math.sqrt(dx2*dy2);
+    return den===0 ? 0 : num/den;
+  }
+  const rpVals = data.map(r=>r.rp);
+  const corrDefs = [
+    ['ob', "Excès de confiance (OB) → RP", 'H1'],
+    ['la', "Aversion aux pertes (LA) → RP", 'H1'],
+    ['ab', "Biais d'ancrage (AB) → RP", 'H1'],
+    ['ai', "Attitude envers l'IA → RP", 'H2'],
+  ];
+  const corrRows = corrDefs.map(([k,label,hyp])=>{
+    const xs = data.map(r=>r[k]);
+    const r = pearson(xs, rpVals);
+    return {label, hyp, r};
+  });
+  // intensity of AI use (0=jamais .. 2=régulier), separate from the attitude score
+  const aiIntensity = data.map(r=> r.ai_use===undefined? null : (2-r.ai_use));
+  const validPairs = data.map((r,i)=>({x:aiIntensity[i], y:r.rp})).filter(p=>p.x!==null);
+  const rAiIntensity = pearson(validPairs.map(p=>p.x), validPairs.map(p=>p.y));
+  corrRows.push({label:"Intensité d'usage de l'IA → RP", hyp:'H2', r:rAiIntensity});
+
+  document.getElementById('dashCorr').innerHTML = corrRows.map(c=>{
+    const r = c.r===null ? 0 : c.r;
+    const pct = Math.min(50, Math.abs(r)*50);
+    const side = r>=0 ? 'left:50%;' : `left:${50-pct}%;`;
+    const color = c.hyp==='H1' ? '#E8A33D' : '#3E8E8A';
+    return `<div class="corr-row">
+      <span class="corr-label">${c.label} <span style="color:var(--gold);font-family:'JetBrains Mono',monospace;font-size:10.5px;">${c.hyp}</span></span>
+      <div class="corr-track"><div class="corr-mid"></div><div class="corr-fill" style="${side}width:${pct}%;background:${color};"></div></div>
+      <span class="corr-val">${c.r===null ? 'n/a' : c.r.toFixed(2)}</span>
+    </div>`;
+  }).join('');
+
+
+  const ageLabels = ['<18','18-24','25-34','35-44','45-54','55+'];
+  const invLabels = ['Actif','Occasionnel','Non-investisseur'];
+  const aiLabels = ['Régulier','Occasionnel','Jamais'];
+  const tierLabels = {short:'Courte', medium:'Moyenne', deep:'Complète'};
+  let rows = data.slice(0,15).map(r=>`
+    <tr>
+      <td>${new Date(r.ts).toLocaleDateString('fr-FR')}</td>
+      <td>${ageLabels[r.age] ?? '-'}</td>
+      <td>${invLabels[r.investor] ?? '-'}</td>
+      <td>${aiLabels[r.ai_use] ?? '-'}</td>
+      <td>${tierLabels[r.tier] ?? '-'}</td>
+      <td>${r.ob}</td><td>${r.la}</td><td>${r.ab}</td><td>${r.rp}</td><td>${r.ai}</td>
+    </tr>`).join('');
+  document.getElementById('dashTable').innerHTML = `
+    <tr><th>Date</th><th>Âge</th><th>Statut</th><th>IA</th><th>Version</th><th>OB</th><th>LA</th><th>AB</th><th>RP</th><th>AI</th></tr>
+    ${rows || '<tr><td colspan="10" style="color:var(--text-dim);">Aucune réponse pour le moment.</td></tr>'}
+  `;
+
+  window.__dashData = data;
+}
+
+function downloadBlob(content, filename, type){
+  const blob = new Blob([content], {type});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = filename;
+  document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+
+function exportCSV(){
+  const data = window.__dashData || [];
+  const headers = ['date','age','gender','edu','status','investor','ai_use','fl','ob','la','ab','rp','ai'];
+  let csv = headers.join(',') + '\n';
+  data.forEach(r=>{
+    csv += [new Date(r.ts).toISOString(), r.age, r.gender, r.edu, r.status, r.investor, r.ai_use, r.fl, r.ob, r.la, r.ab, r.rp, r.ai].join(',') + '\n';
+  });
+  downloadBlob(csv, 'reponses_enquete_risque.csv', 'text/csv');
+}
+
+function exportJSON(){
+  // Full raw export: includes every item-level answer (record.raw), needed for
+  // reliability analysis (Cronbach's alpha) and item-level regression - not just
+  // the aggregated 0-100 dimension scores exported in the CSV.
+  const data = window.__dashData || [];
+  downloadBlob(JSON.stringify(data, null, 2), 'reponses_enquete_risque_brut.json', 'application/json');
+}
+
+function exportSummary(){
+  const data = window.__dashData || [];
+  const n = data.length;
+  const avg = k => n? (data.reduce((s,r)=>s+(r[k]||0),0)/n).toFixed(1) : 0;
+  const investors = data.filter(r=>r.investor===0).length;
+  const non = data.filter(r=>r.investor===2).length;
+  const txt = `Échantillon : n = ${n} répondants.
+Répartition : ${investors} investisseurs actifs, ${data.filter(r=>r.investor===1).length} investisseurs occasionnels, ${non} non-investisseurs.
+Scores moyens (échelle 0-100) : excès de confiance = ${avg('ob')} ; aversion aux pertes = ${avg('la')} ; biais d'ancrage = ${avg('ab')} ; perception du risque = ${avg('rp')} ; rapport à l'IA = ${avg('ai')}.
+Utilisateurs réguliers d'outils d'IA : ${data.filter(r=>r.ai_use===0).length} (${n? Math.round(data.filter(r=>r.ai_use===0).length/n*100):0}%).`;
+  downloadBlob(txt, 'resume_memoire.txt', 'text/plain');
+}
+</script>
+</body>
+</html>
